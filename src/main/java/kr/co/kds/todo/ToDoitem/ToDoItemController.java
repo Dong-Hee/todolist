@@ -9,12 +9,26 @@ import java.util.List;
 @RestController
 @RequestMapping("/todo")
 public class ToDoItemController {
+	
     @Autowired
     private ToDoItemService toDoItemService;
 
+    // 전체조회
+    @RequestMapping(method = RequestMethod.GET)
+    public @ResponseBody List<ToDoItemResponse> getAll() {
+
+        List<String> errors = new ArrayList<>();
+        List<ToDoItem> toDoItems = toDoItemService.getAll();
+        List<ToDoItemResponse> toDoItemResponses = new ArrayList<>();
+        toDoItems.stream().forEach(toDoItem -> {
+            toDoItemResponses.add(ToDoItemAdapter.toToDoItemResponse(toDoItem, errors));
+        });
+        return toDoItemResponses;
+    }
+    
+    // id조회
     @RequestMapping(method = RequestMethod.GET, value = "/{id}")
-    public @ResponseBody ToDoItemResponse get(@PathVariable(value="id") String id) {
-        System.out.println("==================>get["+ id +"] <===============");
+    public @ResponseBody ToDoItemResponse get(@PathVariable(value="id") Integer id) {
 
     	List<String> errors = new ArrayList<>();
         ToDoItem toDoItem = null;
@@ -26,27 +40,12 @@ public class ToDoItemController {
         return ToDoItemAdapter.toToDoItemResponse(toDoItem, errors);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public @ResponseBody List<ToDoItemResponse> getAll() {
-        System.out.println("==================>getAll <===============");
-
-        List<String> errors = new ArrayList<>();
-        List<ToDoItem> toDoItems = toDoItemService.getAll();
-        List<ToDoItemResponse> toDoItemResponses = new ArrayList<>();
-        toDoItems.stream().forEach(toDoItem -> {
-            toDoItemResponses.add(ToDoItemAdapter.toToDoItemResponse(toDoItem, errors));
-        });
-        return toDoItemResponses;
-    }
-
+    // 등록
     @RequestMapping(method = RequestMethod.POST)
     public @ResponseBody ToDoItemResponse create(@RequestBody final ToDoItemRequest toDoItemRequest) {
-        System.out.println("==================>create <===============");
 
     	List<String> errors = new ArrayList<>();
         ToDoItem toDoItem = ToDoItemAdapter.toToDoItem(toDoItemRequest);
-        
-        System.out.println(toDoItemRequest.getTitle());
         
         try {
             toDoItem = toDoItemService.create(toDoItem);
